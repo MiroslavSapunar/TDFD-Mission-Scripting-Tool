@@ -1,0 +1,113 @@
+name: Release
+
+# When should this workflow run?
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+
+# Define jobs that run in parallel
+jobs:
+  release:
+    # Define what operating systems to run on
+    # Currently only building for Windows - uncomment others when ready
+    strategy:
+      matrix:
+        os: [windows-latest]
+        # os: [macos-latest, ubuntu-latest, windows-latest]  # Full cross-platform build
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      # Step 1: Download the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Step 2: Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+      
+      # Step 4: Build the application
+      - name: Build application
+        run: npm run build
+      
+      # Step 5: Package for each platform
+      - name: Package for Windows
+        if: matrix.os == 'windows-latest'
+        run: npm run package:win
+      
+      # TODO: Uncomment when ready for cross-platform releases
+      # - name: Package for macOS
+      #   if: matrix.os == 'macos-latest'
+      #   run: npm run package:mac
+      # 
+      # - name: Package for Linux
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: npm run package:linux
+      
+      # Step 6: Upload build artifacts (the packaged apps)
+      - name: Upload Windows artifacts
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: release/*.exe
+      
+      # TODO: Uncomment when ready for cross-platform releases
+      # - name: Upload macOS artifacts
+      #   if: matrix.os == 'macos-latest'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: macos-build
+      #     path: release/*.dmg
+      # 
+      # - name: Upload Linux artifacts
+      #   if: matrix.os == 'ubuntu-latest'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: linux-build
+      #     path: release/*.AppImage
+
+  # Second job: Create the actual GitHub release
+  create-release:
+    needs: release  # Wait for the build job to complete
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Download all the built artifacts
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: ./release-assets/
+      
+      # TODO: Uncomment when ready for cross-platform releases
+      # - name: Download macOS artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: macos-build
+      #     path: ./release-assets/
+      # 
+      # - name: Download Linux artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: linux-build
+      #     path: ./release-assets/
+      
+      # Create a GitHub release and upload all files
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./release-assets/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
