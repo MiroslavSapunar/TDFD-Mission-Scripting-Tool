@@ -1,0 +1,78 @@
+{
+    "name": "terminator-mission-editor",
+    "version": "1.0.0",
+    "description": "SWT Mission Script Editor for Terminator Dark Fate",
+    "main": "dist/main.js",
+    "author": "Miroslav Sapunar",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:main\" \"npm run dev:renderer\"",
+        "dev:main": "tsc -w -p tsconfig.main.json",
+        "dev:renderer": "vite",
+        "build": "npm run build:renderer && npm run build:main",
+        "build:main": "tsc -p tsconfig.main.json",
+        "build:renderer": "vite build",
+        "start": "electron dist/main.js",
+        "package": "npm run build && electron-builder",
+        "package:win": "npm run build && electron-builder --win portable",
+        "package:mac": "npm run build && electron-builder --mac",
+        "package:linux": "npm run build && electron-builder --linux"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "@vitejs/plugin-react": "^4.0.0",
+        "concurrently": "^8.0.0",
+        "electron": "^25.0.0",
+        "electron-builder": "^24.0.0",
+        "typescript": "^5.0.0",
+        "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+        "lucide-react": "^0.263.1"
+    },
+    "build": {
+        "appId": "com.terminator.missioneditor",
+        "productName": "Terminator Mission Editor",
+        "directories": {
+            "output": "release"
+        },
+        "files": [
+            "dist/**/*",
+            "node_modules/**/*"
+        ],
+        "win": {
+            "target": [
+                {
+                    "target": "portable",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ]
+        },
+        "mac": {
+            "target": [
+                {
+                    "target": "dmg",
+                    "arch": [
+                        "x64",
+                        "arm64"
+                    ]
+                }
+            ],
+            "category": "public.app-category.developer-tools"
+        },
+        "linux": {
+            "target": [
+                {
+                    "target": "AppImage",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "category": "Development"
+        }
+    }
+}

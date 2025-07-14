@@ -1,0 +1,22 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "CommonJS",
+        "outDir": "dist",
+        "noEmit": false,
+        "moduleResolution": "node",
+        "allowImportingTsExtensions": false,
+        "lib": [
+            "ES2020"
+        ]
+    },
+    "include": [
+        "src/main.ts",
+        "src/preload.ts"
+    ],
+    "exclude": [
+        "src/App.tsx",
+        "src/parser.ts",
+        "src/types.ts"
+    ]
+}
